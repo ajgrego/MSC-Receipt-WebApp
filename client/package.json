@@ -1,8 +1,8 @@
 {
-  "name": "my-sisters-closet-client",
+  "name": "client",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:5002",
+  "proxy": "http://localhost:5000",
   "dependencies": {
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
@@ -13,6 +13,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.6.7",
+    "core-js": "^3.35.1",
     "date-fns": "^2.30.0",
     "html2pdf.js": "^0.10.1",
     "react": "^18.2.0",
@@ -24,7 +25,7 @@
     "xlsx": "^0.18.5"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "set PORT=3000 && set WDS_SOCKET_HOST=0.0.0.0 && set WDS_SOCKET_PORT=3000 && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -39,12 +40,18 @@
     "production": [
       ">0.2%",
       "not dead",
-      "not op_mini all"
+      "not op_mini all",
+      "iOS >= 9",
+      "Safari >= 9",
+      "ie >= 11"
     ],
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",
-      "last 1 safari version"
+      "last 1 safari version",
+      "iOS >= 9",
+      "Safari >= 9",
+      "ie >= 11"
     ]
   }
 }

@@ -9,6 +9,7 @@ import {
   Alert,
 } from '@mui/material';
 import axios from 'axios';
+import API_BASE_URL from '../config/api';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5002/api/auth/login', credentials);
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, credentials);
       const { token } = response.data;
       localStorage.setItem('adminToken', token);
       navigate('/admin');

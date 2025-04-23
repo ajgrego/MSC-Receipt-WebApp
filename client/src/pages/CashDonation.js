@@ -20,6 +20,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import html2pdf from 'html2pdf.js';
 import axios from 'axios';
+import API_BASE_URL from '../config/api';
 
 // Format phone number to (XXX) XXX-XXXX
 const formatPhoneNumber = (phoneNumberString) => {
@@ -140,7 +141,7 @@ const CashDonation = () => {
       const localDate = new Date(formData.date);
       const formattedDate = `${localDate.getFullYear()}-${String(localDate.getMonth() + 1).padStart(2, '0')}-${String(localDate.getDate()).padStart(2, '0')}`;
       
-      const response = await axios.post('/api/donations', {
+      const response = await axios.post(`${API_BASE_URL}/api/donations`, {
         ...formData,
         type: 'cash',
         amount: parseFloat(formData.amount),
@@ -235,7 +236,7 @@ const CashDonation = () => {
     
     setLoading(true);
     try {
-      const response = await axios.post(`/api/donations/${donationId}/email`, {
+      const response = await axios.post(`${API_BASE_URL}/api/donations/${donationId}/email`, {
         email: formData.donor_email,
       });
       

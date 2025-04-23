@@ -30,6 +30,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { Download as DownloadIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import axios from 'axios';
 import io from 'socket.io-client';
+import API_BASE_URL from '../config/api';
 
 // Add phone number formatting function
 const formatPhoneNumber = (phoneNumberString) => {
@@ -85,7 +86,7 @@ const AdminPanel = () => {
 
       try {
         // Verify token with server
-        const response = await axios.get('http://localhost:5002/api/auth/verify', {
+        const response = await axios.get(`${API_BASE_URL}/api/auth/verify`, {
           headers: {
             'Authorization': `Bearer ${storedToken}`
           }
@@ -94,7 +95,7 @@ const AdminPanel = () => {
         if (response.data.valid) {
           setToken(storedToken);
           setLoginOpen(false);
-          const socket = io('http://localhost:5002');
+          const socket = io(API_BASE_URL);
           await fetchDonations();
           
           socket.on('donationUpdate', () => {
@@ -125,7 +126,7 @@ const AdminPanel = () => {
   const fetchDonations = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5002/api/donations', {
+      const response = await axios.get(`${API_BASE_URL}/api/donations`, {
         headers: {
           'Authorization': `Bearer ${token}`
         },
@@ -147,7 +148,7 @@ const AdminPanel = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5002/api/auth/login', credentials);
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, credentials);
       const { token: newToken } = response.data;
       
       localStorage.setItem('adminToken', newToken);
@@ -173,7 +174,7 @@ const AdminPanel = () => {
   const handleExport = async () => {
     try {
       console.log('Starting export with token:', token);
-      const response = await axios.get('http://localhost:5002/api/donations/export/excel', {
+      const response = await axios.get(`${API_BASE_URL}/api/donations/export/excel`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -246,7 +247,7 @@ const AdminPanel = () => {
 
   const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:5002/api/donations/${deletingDonation.id}`, {
+      await axios.delete(`${API_BASE_URL}/api/donations/${deletingDonation.id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

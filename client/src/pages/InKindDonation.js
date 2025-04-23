@@ -24,6 +24,7 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  CircularProgress,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -32,6 +33,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import html2pdf from 'html2pdf.js';
 import axios from 'axios';
+import API_BASE_URL from '../config/api';
 
 // Format phone number to (XXX) XXX-XXXX
 const formatPhoneNumber = (phoneNumberString) => {
@@ -153,7 +155,7 @@ const InKindDonation = () => {
     }
     
     try {
-      const response = await axios.post('http://localhost:5002/api/donations', {
+      const response = await axios.post(`${API_BASE_URL}/api/donations`, {
         ...formData,
         type: 'in-kind',
         items: items.map(item => ({
@@ -252,7 +254,7 @@ const InKindDonation = () => {
     }
     
     try {
-      await axios.post(`http://localhost:5002/api/donations/${donationId}/email`, {
+      await axios.post(`${API_BASE_URL}/api/donations/${donationId}/email`, {
         email: formData.donor_email,
       });
       

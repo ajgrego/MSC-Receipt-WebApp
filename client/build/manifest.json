@@ -1,0 +1,25 @@
+{
+  "short_name": "My Sister's Closet",
+  "name": "My Sister's Closet - Donation Management System",
+  "icons": [
+    {
+      "src": "images.png",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "images.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "images.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#F052A1",
+  "background_color": "#ffffff"
+} 
