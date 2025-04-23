@@ -66,88 +66,128 @@ The My Sister's Closet Donation Management System is a comprehensive web applica
   - SheetJS for Excel export
   - Nodemailer for email functionality
 
-## 📦 Installation
+## 🚀 Quick Start Guide
 
-### Prerequisites
-- Node.js (v16+)
-- npm (v7+)
-- Git
+### Development Setup (ThinkPad)
 
-### Setup Steps
-
-1. **Clone the Repository**
+1. **Clone and Install**
    ```bash
+   # Clone the repository
    git clone [repository-url]
-   cd my-sisters-closet
-   ```
+   cd MSC-Receipt-WebApp
 
-2. **Install Dependencies**
-   ```bash
+   # Install all dependencies (this will install for both client and server)
    npm run install:all
    ```
 
-3. **Environment Configuration**
-   Create a `.env` file in the server directory:
-   ```env
-   PORT=5002
+2. **Environment Setup**
+   ```bash
+   # Navigate to server directory
+   cd server
+
+   # Create .env file
+   echo "PORT=5002
    JWT_SECRET=your_secret_key
    SMTP_HOST=your_smtp_host
    SMTP_PORT=587
    SMTP_USER=your_email
    SMTP_PASS=your_password
-   SMTP_FROM=noreply@mysisterscloset.org
+   SMTP_FROM=noreply@mysisterscloset.org" > .env
+
+   # Return to root directory
+   cd ..
    ```
 
-4. **Start the Application**
+3. **Start Development Server**
    ```bash
+   # This will start both client and server in development mode
    npm start
+
+   # The application will be available at:
+   # Frontend: http://localhost:3000
+   # Backend: http://localhost:5002
    ```
-   This will launch both the frontend and backend servers.
 
-## 🚀 Deployment
+### Production Deployment (Work Network)
 
-### Simple Deployment
-The application can be deployed with a single command:
+1. **Build the Application**
+   ```bash
+   # Navigate to client directory
+   cd client
+   
+   # Create production build
+   npm run build
+   
+   # Return to root
+   cd ..
+   ```
 
-```bash
-npm start
-```
+2. **Server Configuration**
+   - Update the `.env` file in the server directory with production values
+   - Ensure all SMTP settings are configured for your work email server
+   - Set `NODE_ENV=production`
 
-This will start both the client and server components of the application. The client will be available at `http://localhost:3000` and the server at `http://localhost:5002`.
+3. **Database Setup**
+   ```bash
+   # Navigate to server directory
+   cd server
+   
+   # Initialize the database (if first time)
+   node src/db/init.js
+   ```
 
-### Production Considerations
-For a more permanent deployment:
+4. **Start Production Server**
+   ```bash
+   # In the server directory
+   NODE_ENV=production npm start
+   ```
 
-1. **Database Management**
-   - The SQLite database is automatically created on first run
-   - To reset the database:
+### Available Scripts
+
+All scripts can be run from the root directory:
+
+- `npm run install:all` - Installs all dependencies (client + server)
+- `npm start` - Starts both client and server in development mode
+- `npm run start:client` - Starts only the client
+- `npm run start:server` - Starts only the server
+- `npm run install:client` - Installs only client dependencies
+- `npm run install:server` - Installs only server dependencies
+
+### Troubleshooting
+
+1. **Port Conflicts**
+   - If port 3000 or 5002 is in use:
      ```bash
-     cd server
-     node reset-db.js
+     # Windows (PowerShell)
+     netstat -ano | findstr :3000
+     netstat -ano | findstr :5002
+     
+     # Then kill the process using the PID
+     taskkill /PID [PID] /F
      ```
 
-3. **Backup Strategy**
-   - Regularly back up the `database.sqlite` file
-   - Consider setting up automated backups
+2. **Database Issues**
+   - If you encounter database errors:
+     ```bash
+     cd server
+     # Backup existing database
+     copy database.sqlite database.sqlite.backup
+     # Reinitialize database
+     node src/db/init.js
+     ```
 
-## 📜 Available Scripts
-
-### Root Directory Scripts
-- `npm start` - Starts both the client and server
-- `npm run install:all` - Installs dependencies for both client and server
-- `npm run client` - Starts only the client development server
-- `npm run server` - Starts only the server
-- `npm run dev` - Starts both client and server in development mode with hot reloading
-
-### Server Scripts
-- `node reset-db.js` - Resets the database by deleting all donation records
-- `node src/index.js` - Starts the server directly
-
-### Client Scripts
-- `npm start` - Starts the React development server
-- `npm run build` - Builds the app for production
-- `npm test` - Runs the test suite
-- `npm run eject` - Ejects from Create React App
+3. **Node Module Issues**
+   - If you encounter module-related errors:
+     ```bash
+     # Clear npm cache
+     npm cache clean --force
+     
+     # Remove all node_modules and reinstall
+     rm -rf node_modules
+     rm -rf client/node_modules
+     rm -rf server/node_modules
+     npm run install:all
+     ```
 
 ## 🔧 System Architecture
 

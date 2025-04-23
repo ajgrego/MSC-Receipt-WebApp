@@ -11,11 +11,18 @@
     "start": "concurrently \"npm run start:server\" \"npm run start:client\"",
     "start:client": "cd client && npm start",
     "start:server": "cd server && npm start",
+    "dev": "concurrently --kill-others-on-fail \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:client": "cd client && npm start",
+    "dev:server": "cd server && npm start",
     "install:all": "npm install && npm run install:client && npm run install:server",
     "install:client": "cd client && npm install",
-    "install:server": "cd server && npm install"
+    "install:server": "cd server && npm install",
+    "clean": "rimraf node_modules client/node_modules server/node_modules",
+    "clean:install": "npm run clean && npm run install:all",
+    "dev:setup": "npm run install:all && npm run dev"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "rimraf": "^5.0.10"
   }
-} 
+}

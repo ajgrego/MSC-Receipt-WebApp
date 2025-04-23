@@ -476,7 +476,7 @@ const AdminPanel = () => {
               />
               <TextField
                 fullWidth
-                label=""
+                label="Password"
                 name="password"
                 type="password"
                 value={credentials.password}
