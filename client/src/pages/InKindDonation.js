@@ -82,14 +82,6 @@ const InKindDonation = () => {
     if (items.length === 0) {
       newErrors.items = 'At least one item is required';
     }
-    items.forEach((item, index) => {
-      if (!item.description.trim()) {
-        newErrors[`item_${index}_description`] = 'Item description is required';
-      }
-      if (!item.value || parseFloat(item.value) <= 0) {
-        newErrors[`item_${index}_value`] = 'Please enter a valid value';
-      }
-    });
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
