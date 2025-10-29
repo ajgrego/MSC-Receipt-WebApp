@@ -129,7 +129,10 @@ const InKindDonation = () => {
   };
 
   const calculateTotal = () => {
-    return items.reduce((sum, item) => sum + parseFloat(item.value || 0), 0);
+    return items.reduce((sum, item) => {
+      const value = parseFloat(item.value);
+      return sum + (isNaN(value) ? 0 : value);
+    }, 0);
   };
 
   const handleSubmit = async (e) => {
@@ -145,12 +148,15 @@ const InKindDonation = () => {
     }
     
     try {
+      // Filter out items with no description or value
+      const validItems = items.filter(item => item.description && item.value);
+      
       const response = await axios.post('http://localhost:5002/api/donations', {
         ...formData,
         type: 'in-kind',
-        items: items.map(item => ({
+        items: validItems.map(item => ({
           ...item,
-          value: parseFloat(item.value)
+          value: parseFloat(item.value) || 0
         })),
         total_value: calculateTotal(),
       });
@@ -279,6 +285,9 @@ const InKindDonation = () => {
     setItems([{ description: '', value: '' }]);
     setErrors({});
   };
+
+  // Filter valid items for display
+  const validItems = items.filter(item => item.description && item.value);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -509,72 +518,75 @@ const InKindDonation = () => {
                 )}
               </Grid>
 
-              <TableContainer component={Paper} sx={{ mb: 3 }}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{ 
-                        borderBottom: 2, 
-                        borderColor: '#F052A1', 
-                        fontWeight: 'bold',
-                        fontSize: '1.1rem',
-                        padding: '12px'
-                      }}>
-                        Description
-                      </TableCell>
-                      <TableCell align="right" sx={{ 
-                        borderBottom: 2, 
-                        borderColor: '#F052A1', 
-                        fontWeight: 'bold',
-                        fontSize: '1.1rem',
-                        padding: '12px'
-                      }}>
-                        Value
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {items.map((item, index) => (
-                      <TableRow key={index}>
+              {/* Only show table if there are valid items with both description and value */}
+              {validItems.length > 0 && (
+                <TableContainer component={Paper} sx={{ mb: 3 }}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
                         <TableCell sx={{ 
-                          borderBottom: 1, 
-                          borderColor: '#eee',
-                          padding: '10px'
+                          borderBottom: 2, 
+                          borderColor: '#F052A1', 
+                          fontWeight: 'bold',
+                          fontSize: '1.1rem',
+                          padding: '12px'
                         }}>
-                          {item.description}
+                          Description
                         </TableCell>
                         <TableCell align="right" sx={{ 
-                          borderBottom: 1, 
-                          borderColor: '#eee',
-                          padding: '10px'
+                          borderBottom: 2, 
+                          borderColor: '#F052A1', 
+                          fontWeight: 'bold',
+                          fontSize: '1.1rem',
+                          padding: '12px'
                         }}>
-                          ${parseFloat(item.value).toFixed(2)}
+                          Value
                         </TableCell>
                       </TableRow>
-                    ))}
-                    <TableRow>
-                      <TableCell sx={{ 
-                        borderTop: 2, 
-                        borderColor: '#F052A1', 
-                        fontWeight: 'bold',
-                        fontSize: '1.1rem',
-                        padding: '12px'
-                      }}>
-                        Total Value
-                      </TableCell>
-                      <TableCell align="right" sx={{ 
-                        borderTop: 2, 
-                        borderColor: '#F052A1', 
-                        fontWeight: 'bold',
-                        fontSize: '1.1rem',
-                        padding: '12px'
-                      }}>
-                        ${calculateTotal().toFixed(2)}
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                      {validItems.map((item, index) => (
+                        <TableRow key={index}>
+                          <TableCell sx={{ 
+                            borderBottom: 1, 
+                            borderColor: '#eee',
+                            padding: '10px'
+                          }}>
+                            {item.description}
+                          </TableCell>
+                          <TableCell align="right" sx={{ 
+                            borderBottom: 1, 
+                            borderColor: '#eee',
+                            padding: '10px'
+                          }}>
+                            ${parseFloat(item.value || 0).toFixed(2)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      <TableRow>
+                        <TableCell sx={{ 
+                          borderTop: 2, 
+                          borderColor: '#F052A1', 
+                          fontWeight: 'bold',
+                          fontSize: '1.1rem',
+                          padding: '12px'
+                        }}>
+                          Total Value
+                        </TableCell>
+                        <TableCell align="right" sx={{ 
+                          borderTop: 2, 
+                          borderColor: '#F052A1', 
+                          fontWeight: 'bold',
+                          fontSize: '1.1rem',
+                          padding: '12px'
+                        }}>
+                          ${calculateTotal().toFixed(2)}
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
 
               <Typography variant="body1" paragraph sx={{ textAlign: 'justify', lineHeight: 1.5, fontSize: '1rem' }}>
                 On behalf of the women we serve and My Sister's Closet staff, we wish to thank you for 
@@ -709,4 +721,4 @@ const InKindDonation = () => {
   );
 };
 
-export default InKindDonation; 
+export default InKindDonation;
