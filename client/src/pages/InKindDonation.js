@@ -129,7 +129,10 @@ const InKindDonation = () => {
   };
 
   const calculateTotal = () => {
-    return items.reduce((sum, item) => sum + parseFloat(item.value || 0), 0);
+    return items.reduce((sum, item) => {
+      const value = parseFloat(item.value);
+      return sum + (isNaN(value) ? 0 : value);
+    }, 0);
   };
 
   const handleSubmit = async (e) => {
@@ -145,12 +148,15 @@ const InKindDonation = () => {
     }
     
     try {
+      // Filter out items with no description or value
+      const validItems = items.filter(item => item.description && item.value);
+      
       const response = await axios.post('http://localhost:5002/api/donations', {
         ...formData,
         type: 'in-kind',
-        items: items.map(item => ({
+        items: validItems.map(item => ({
           ...item,
-          value: parseFloat(item.value)
+          value: parseFloat(item.value) || 0
         })),
         total_value: calculateTotal(),
       });
@@ -279,6 +285,9 @@ const InKindDonation = () => {
     setItems([{ description: '', value: '' }]);
     setErrors({});
   };
+
+  // Filter valid items for display
+  const validItems = items.filter(item => item.description && item.value);
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -509,13 +518,16 @@ const InKindDonation = () => {
                 )}
               </Grid>
 
+              {/* Always show table, even if empty */}
               <TableContainer component={Paper} sx={{ mb: 3 }}>
                 <Table>
                   <TableHead>
                     <TableRow>
                       <TableCell sx={{ 
                         borderBottom: 2, 
-                        borderColor: '#F052A1', 
+                        borderRight: 1,
+                        borderBottomColor: '#F052A1',
+                        borderRightColor: '#F052A1',
                         fontWeight: 'bold',
                         fontSize: '1.1rem',
                         padding: '12px'
@@ -523,8 +535,8 @@ const InKindDonation = () => {
                         Description
                       </TableCell>
                       <TableCell align="right" sx={{ 
-                        borderBottom: 2, 
-                        borderColor: '#F052A1', 
+                        borderBottom: 2,
+                        borderBottomColor: '#F052A1',
                         fontWeight: 'bold',
                         fontSize: '1.1rem',
                         padding: '12px'
@@ -534,28 +546,40 @@ const InKindDonation = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {items.map((item, index) => (
-                      <TableRow key={index}>
-                        <TableCell sx={{ 
-                          borderBottom: 1, 
-                          borderColor: '#eee',
-                          padding: '10px'
-                        }}>
-                          {item.description}
-                        </TableCell>
-                        <TableCell align="right" sx={{ 
-                          borderBottom: 1, 
-                          borderColor: '#eee',
-                          padding: '10px'
-                        }}>
-                          ${parseFloat(item.value).toFixed(2)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {items.map((item, index) => {
+                      // Check if this item has both description and value
+                      const isValid = item.description && item.value;
+                      const borderColor = isValid ? '#eee' : '#333';
+                      
+                      return (
+                        <TableRow key={index}>
+                          <TableCell sx={{ 
+                            borderBottom: 1,
+                            borderRight: 1,
+                            borderBottomColor: borderColor,
+                            borderRightColor: borderColor,
+                            padding: isValid ? '10px' : '20px',
+                            height: isValid ? 'auto' : '50px'
+                          }}>
+                            {isValid ? item.description : '\u00A0'}
+                          </TableCell>
+                          <TableCell align="right" sx={{ 
+                            borderBottom: 1,
+                            borderBottomColor: borderColor,
+                            padding: isValid ? '10px' : '20px',
+                            height: isValid ? 'auto' : '50px'
+                          }}>
+                            {isValid ? `$${parseFloat(item.value || 0).toFixed(2)}` : '\u00A0'}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                     <TableRow>
                       <TableCell sx={{ 
-                        borderTop: 2, 
-                        borderColor: '#F052A1', 
+                        borderTop: 2,
+                        borderRight: 1,
+                        borderTopColor: '#F052A1',
+                        borderRightColor: '#F052A1',
                         fontWeight: 'bold',
                         fontSize: '1.1rem',
                         padding: '12px'
@@ -563,8 +587,8 @@ const InKindDonation = () => {
                         Total Value
                       </TableCell>
                       <TableCell align="right" sx={{ 
-                        borderTop: 2, 
-                        borderColor: '#F052A1', 
+                        borderTop: 2,
+                        borderTopColor: '#F052A1',
                         fontWeight: 'bold',
                         fontSize: '1.1rem',
                         padding: '12px'
@@ -709,4 +733,4 @@ const InKindDonation = () => {
   );
 };
 
-export default InKindDonation; 
+export default InKindDonation;
