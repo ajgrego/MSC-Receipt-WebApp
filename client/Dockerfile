@@ -1,6 +1,9 @@
 # Build stage
 FROM node:18-alpine AS build
 
+# Install build dependencies
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 
 # Copy package files
