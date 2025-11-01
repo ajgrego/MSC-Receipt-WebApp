@@ -151,7 +151,7 @@ const InKindDonation = () => {
       // Filter out items with no description or value
       const validItems = items.filter(item => item.description && item.value);
       
-      const response = await axios.post('http://localhost:5002/api/donations', {
+      const response = await axios.post('/api/donations', {
         ...formData,
         type: 'in-kind',
         items: validItems.map(item => ({
@@ -250,7 +250,7 @@ const InKindDonation = () => {
     }
     
     try {
-      await axios.post(`http://localhost:5002/api/donations/${donationId}/email`, {
+      await axios.post(`/api/donations/${donationId}/email`, {
         email: formData.donor_email,
       });
       
