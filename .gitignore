@@ -137,3 +137,19 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Environment files
+.env
+.env.production
+.env.local
+
+# Database
+*.sqlite
+*.sqlite3
+
+# Docker
+docker-compose.override.yml
+
+# Logs and temp files
+server/excel-logs/
+server/temp/

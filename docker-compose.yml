@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: msc-server
+    restart: unless-stopped
+    ports:
+      - "5002:5002"
+    environment:
+      - NODE_ENV=production
+      - PORT=5002
+      - JWT_SECRET=${JWT_SECRET}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
+      - CLIENT_URL=${CLIENT_URL}
+    volumes:
+      - ./server/database.sqlite:/app/database.sqlite
+      - ./server/excel-logs:/app/excel-logs
+      - ./server/temp:/app/temp
+    networks:
+      - msc-network
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: msc-client
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    networks:
+      - msc-network
+
+networks:
+  msc-network:
+    driver: bridge
+
+volumes:
+  database:
+  excel-logs:
+  temp:
