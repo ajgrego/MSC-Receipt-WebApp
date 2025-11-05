@@ -539,6 +539,15 @@ router.post('/:id/email', async (req, res) => {
   console.log(`Attempting to send email receipt for donation ID: ${donationId} to email: ${email}`);
 
   try {
+    // Check if SMTP is configured
+    if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      console.error('SMTP configuration is missing');
+      return res.status(500).json({
+        error: 'Email service is not configured. Please contact the administrator to set up SMTP email configuration.',
+        details: 'SMTP_HOST, SMTP_USER, and SMTP_PASS environment variables are required'
+      });
+    }
+
     const donation = await new Promise((resolve, reject) => {
       db.get('SELECT * FROM donations WHERE id = ?', [donationId], (err, row) => {
         if (err) reject(err);

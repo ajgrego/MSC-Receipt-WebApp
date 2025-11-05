@@ -248,23 +248,30 @@ const InKindDonation = () => {
       });
       return;
     }
-    
+
     try {
       await axios.post(`/api/donations/${donationId}/email`, {
         email: formData.donor_email,
       });
-      
+
       setEmailConfirmOpen(true);
-      
+
       // Redirect to home page after a delay
       setTimeout(() => {
         navigate('/');
       }, 3000);
     } catch (error) {
       console.error('Error sending email:', error);
+
+      // Extract error message from response if available
+      let errorMessage = 'Error sending email. Please try again.';
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      }
+
       setSnackbar({
         open: true,
-        message: 'Error sending email. Please try again.',
+        message: errorMessage,
         severity: 'error',
       });
     }
