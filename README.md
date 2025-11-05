@@ -19,9 +19,7 @@ The My Sister's Closet Donation Management System is a full-stack web applicatio
 - [Deployment](#deployment)
 - [User Management](#user-management)
 - [Usage Guide](#usage-guide)
-- [API Documentation](#api-documentation)
 - [Maintenance](#maintenance)
-- [Troubleshooting](#troubleshooting)
 
 ## Features
 
@@ -129,7 +127,7 @@ SMTP_PASS=your-email-specific-password
 SMTP_FROM=your-email@gmail.com
 ```
 
-**Important**: Replace all placeholder values with your actual configuration. For Gmail, you'll need to use an [App Password](https://support.google.com/accounts/answer/185833).
+**Important**: Replace all placeholder values with your actual configuration.
 
 ## Configuration
 
@@ -191,25 +189,6 @@ Docker configuration files are included in the repository:
 
 ```bash
 docker-compose up -d
-```
-
-#### Option 3: Process Manager (PM2)
-
-For production deployments, use PM2 to keep the application running:
-
-```bash
-# Install PM2 globally
-npm install -g pm2
-
-# Start the application
-cd server
-pm2 start src/index.js --name msc-donations
-
-# Save the PM2 configuration
-pm2 save
-
-# Configure PM2 to start on system boot
-pm2 startup
 ```
 
 ### Reverse Proxy Configuration
@@ -349,93 +328,6 @@ Two types of Excel exports are available:
    - Click "Export to Excel" button
    - Downloads all filtered donations
 
-## API Documentation
-
-### Public Endpoints
-
-#### Create Donation
-```
-POST /api/donations
-Content-Type: application/json
-
-Body:
-{
-  "type": "cash" | "in-kind",
-  "date": "YYYY-MM-DD",
-  "donor_name": "string",
-  "street_address": "string" (optional),
-  "city": "string" (optional),
-  "state": "string" (optional),
-  "zip_code": "string" (optional),
-  "donor_phone": "string" (optional),
-  "donor_email": "string" (optional),
-  "amount": number (for cash),
-  "items": array (for in-kind),
-  "total_value": number (for in-kind)
-}
-```
-
-#### Email Receipt
-```
-POST /api/donations/:id/email
-Content-Type: application/json
-
-Body:
-{
-  "email": "recipient@example.com"
-}
-```
-
-### Protected Endpoints (Require JWT Token)
-
-#### Get All Donations
-```
-GET /api/donations
-Headers: { "Authorization": "Bearer <token>" }
-```
-
-#### Get Donation by ID
-```
-GET /api/donations/:id
-```
-
-#### Delete Donation
-```
-DELETE /api/donations/:id
-Headers: { "Authorization": "Bearer <token>" }
-```
-
-#### Export to Excel
-```
-GET /api/donations/export/excel
-Headers: { "Authorization": "Bearer <token>" }
-```
-
-### Authentication Endpoints
-
-#### Login
-```
-POST /api/auth/login
-Content-Type: application/json
-
-Body:
-{
-  "username": "string",
-  "password": "string"
-}
-
-Response:
-{
-  "token": "jwt_token_string",
-  "username": "string"
-}
-```
-
-#### Verify Token
-```
-GET /api/auth/verify
-Headers: { "Authorization": "Bearer <token>" }
-```
 
 ## Maintenance
 
@@ -474,15 +366,6 @@ cd server
 npm start
 ```
 
-### Performance Optimization
-
-For high-volume deployments:
-
-1. Consider migrating to PostgreSQL or MySQL
-2. Implement connection pooling
-3. Add Redis for session management
-4. Enable Nginx caching
-5. Use a CDN for static assets
 
 ## Troubleshooting
 
@@ -599,18 +482,10 @@ MSC-Receipt-WebApp/
 1. **Change Default Passwords**: Modify default admin credentials before production deployment
 2. **Environment Variables**: Never commit `.env` files to version control
 3. **JWT Secret**: Use a strong, random secret key (minimum 32 characters)
-4. **HTTPS**: Always use HTTPS in production (configure via Nginx/Apache)
-5. **Rate Limiting**: Consider implementing rate limiting for authentication endpoints
-6. **Input Validation**: All inputs are validated on both client and server
-7. **SQL Injection**: Parameterized queries prevent SQL injection attacks
 
 ## License
 
-© 2024 My Sister's Closet. All rights reserved.
-
-## Support
-
-For technical support or questions, please contact the system administrator.
+© 2025 My Sister's Closet. All rights reserved.
 
 ---
 
