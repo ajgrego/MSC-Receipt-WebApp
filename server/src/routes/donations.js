@@ -195,9 +195,12 @@ services, they are able to improve their economic standing and provide brighter 
         <div class="label">Name:</div>
         <div class="value">${donation.donor_name}</div>
 
-        ${donation.donor_address ? `
+        ${(donation.street_address || donation.city || donation.state || donation.zip_code) ? `
           <div class="label">Address:</div>
-          <div class="value">${donation.donor_address}</div>
+          <div class="value">
+            ${donation.street_address ? `${donation.street_address}<br>` : ''}
+            ${[donation.city, donation.state, donation.zip_code].filter(Boolean).join(', ')}
+          </div>
         ` : ''}
 
         ${donation.donor_phone ? `
@@ -264,7 +267,10 @@ router.post('/', async (req, res) => {
     type,
     date,
     donor_name,
-    donor_address,
+    street_address,
+    city,
+    state,
+    zip_code,
     donor_phone,
     donor_email,
     amount,
@@ -287,14 +293,17 @@ router.post('/', async (req, res) => {
     const result = await new Promise((resolve, reject) => {
       db.run(
         `INSERT INTO donations (
-          type, date, donor_name, donor_address, donor_phone,
+          type, date, donor_name, street_address, city, state, zip_code, donor_phone,
           donor_email, amount, items, total_value
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           type,
           date,
           donor_name,
-          donor_address || null,
+          street_address || null,
+          city || null,
+          state || null,
+          zip_code || null,
           donor_phone || null,
           donor_email || null,
           amount || null,
@@ -377,6 +386,14 @@ router.get('/export/excel', verifyToken, async (req, res) => {
         formattedDate = `${dateParts[1]}/${dateParts[2]}/${dateParts[0]}`;
       }
 
+      // Format address from separate fields
+      const addressParts = [];
+      if (row.street_address) addressParts.push(row.street_address);
+      if (row.city) addressParts.push(row.city);
+      if (row.state) addressParts.push(row.state);
+      if (row.zip_code) addressParts.push(row.zip_code);
+      const fullAddress = addressParts.join(', ');
+
       return {
         id: `MSC-${row.id.toString().padStart(4, '0')}`,
         date: formattedDate,
@@ -384,7 +401,7 @@ router.get('/export/excel', verifyToken, async (req, res) => {
         donor_name: row.donor_name,
         donor_email: row.donor_email || '',
         donor_phone: formatPhoneNumber(row.donor_phone) || '',
-        donor_address: row.donor_address || '',
+        donor_address: fullAddress,
         items: itemDescriptions,
         value: row.type === 'cash' 
           ? (row.amount ? `$${parseFloat(row.amount).toFixed(2)}` : '')

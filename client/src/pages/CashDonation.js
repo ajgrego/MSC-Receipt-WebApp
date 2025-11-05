@@ -44,7 +44,10 @@ const CashDonation = () => {
   const [formData, setFormData] = useState({
     date: new Date(),
     donor_name: '',
-    donor_address: '',
+    street_address: '',
+    city: '',
+    state: '',
+    zip_code: '',
     donor_phone: '',
     donor_email: '',
     amount: '',
@@ -266,7 +269,10 @@ const CashDonation = () => {
     setFormData({
       date: new Date(),
       donor_name: '',
-      donor_address: '',
+      street_address: '',
+      city: '',
+      state: '',
+      zip_code: '',
       donor_phone: '',
       donor_email: '',
       amount: '',
@@ -332,12 +338,42 @@ const CashDonation = () => {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Donor Address"
-                  name="donor_address"
-                  value={formData.donor_address}
+                  label="Street Address"
+                  name="street_address"
+                  value={formData.street_address}
                   onChange={handleChange}
-                  multiline
-                  rows={2}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={5}>
+                <TextField
+                  fullWidth
+                  label="City"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                />
+              </Grid>
+
+              <Grid item xs={6} sm={3}>
+                <TextField
+                  fullWidth
+                  label="State"
+                  name="state"
+                  value={formData.state}
+                  onChange={handleChange}
+                  inputProps={{ maxLength: 2 }}
+                />
+              </Grid>
+
+              <Grid item xs={6} sm={4}>
+                <TextField
+                  fullWidth
+                  label="ZIP Code"
+                  name="zip_code"
+                  value={formData.zip_code}
+                  onChange={handleChange}
+                  inputProps={{ maxLength: 10 }}
                 />
               </Grid>
               
@@ -445,7 +481,7 @@ const CashDonation = () => {
                   </Typography>
                 </Grid>
                 
-                {formData.donor_address && (
+                {(formData.street_address || formData.city || formData.state || formData.zip_code) && (
                   <>
                     <Grid item xs={4} sm={3}>
                       <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#F052A1' }}>
@@ -453,9 +489,16 @@ const CashDonation = () => {
                       </Typography>
                     </Grid>
                     <Grid item xs={8} sm={9}>
-                      <Typography variant="subtitle1">
-                        {formData.donor_address}
-                      </Typography>
+                      {formData.street_address && (
+                        <Typography variant="subtitle1">
+                          {formData.street_address}
+                        </Typography>
+                      )}
+                      {(formData.city || formData.state || formData.zip_code) && (
+                        <Typography variant="subtitle1">
+                          {[formData.city, formData.state, formData.zip_code].filter(Boolean).join(', ')}
+                        </Typography>
+                      )}
                     </Grid>
                   </>
                 )}

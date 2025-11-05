@@ -49,6 +49,14 @@ class ExcelLogger {
       formattedDate = `${dateParts[1]}/${dateParts[2]}/${dateParts[0]}`;
     }
 
+    // Format address from separate fields
+    const addressParts = [];
+    if (donation.street_address) addressParts.push(donation.street_address);
+    if (donation.city) addressParts.push(donation.city);
+    if (donation.state) addressParts.push(donation.state);
+    if (donation.zip_code) addressParts.push(donation.zip_code);
+    const fullAddress = addressParts.join(', ');
+
     return {
       'Receipt ID': `MSC-${donation.id.toString().padStart(4, '0')}`,
       'Date': formattedDate,
@@ -56,7 +64,7 @@ class ExcelLogger {
       'Donor Name': donation.donor_name,
       'Email': donation.donor_email || '',
       'Phone': this.formatPhoneNumber(donation.donor_phone) || '',
-      'Address': donation.donor_address || '',
+      'Address': fullAddress,
       'Items': items,
       'Amount': totalValue ? `$${parseFloat(totalValue).toFixed(2)}` : ''
     };
