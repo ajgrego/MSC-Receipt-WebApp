@@ -1,13 +1,13 @@
-# My Sister's Closet - Donation Management System
+# My Sister's Closet - Receipt Management System
 
 <div align="center">
   <img src="client/public/images.png" alt="My Sister's Closet Logo" width="200"/>
-  <h3>Professional Donation Processing and Receipt Management System</h3>
+  <h3>Receipt Management System</h3>
 </div>
 
 ## Overview
 
-The My Sister's Closet Donation Management System is a full-stack web application built to streamline the donation process for both cash and in-kind contributions. The system provides automated receipt generation, secure administrative oversight, and comprehensive donation tracking with real-time updates.
+The My Sister's Closet Donation Management System is a full-stack web application built to streamline the donation process for both cash and in-kind contributions. The system provides automated receipt generation, secure administrative oversight, and excellent logging.
 
 ## Table of Contents
 
@@ -76,7 +76,7 @@ The My Sister's Closet Donation Management System is a full-stack web applicatio
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/ajgrego/MSC-Receipt-WebApp.git
 cd MSC-Receipt-WebApp
 ```
 
@@ -125,8 +125,8 @@ JWT_SECRET=your_very_secure_random_secret_key_here
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-app-specific-password
-SMTP_FROM=noreply@mysisterscloset.org
+SMTP_PASS=your-email-specific-password
+SMTP_FROM=your-email@gmail.com
 ```
 
 **Important**: Replace all placeholder values with your actual configuration. For Gmail, you'll need to use an [App Password](https://support.google.com/accounts/answer/185833).
@@ -148,7 +148,7 @@ Three admin accounts are created by default (see [User Management](#user-managem
 
 ### Email Configuration
 
-Email functionality is optional. If SMTP credentials are not configured, the application will function normally but email receipt delivery will not be available.
+Email functionality is optional. If SMTP credentials are not configured, the application will function normally, but email receipt delivery will not be available.
 
 For Gmail SMTP:
 1. Enable 2-Factor Authentication on your Google account
