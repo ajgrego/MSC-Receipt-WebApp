@@ -120,7 +120,7 @@ Since 1998, MSC has helped thousands of women move past obstacles such as homele
 and domestic violence, and into better-paying jobs with benefits. By providing these life-changing 
 services, they are able to improve their economic standing and provide brighter lives for their children.`;
 
-  const logoPath = path.join(__dirname, '../../../client/public/images.png');
+  const logoPath = path.join(__dirname, '../../public/assets/logo.png');
   const logoBase64 = await fs.readFile(logoPath, { encoding: 'base64' });
 
   const htmlContent = `

@@ -57,6 +57,17 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Debug endpoint to check admin users (remove in production)
+app.get('/api/debug/admins', (req, res) => {
+  const { db } = require('./config/database');
+  db.all('SELECT username, created_at FROM admin', (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({ admins: rows, count: rows.length });
+  });
+});
+
 // Routes
 app.use('/api/donations', donationRoutes);
 app.use('/api/auth', authRoutes);
