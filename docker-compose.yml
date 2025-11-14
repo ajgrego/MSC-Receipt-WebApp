@@ -20,9 +20,8 @@ services:
       - SMTP_FROM=${SMTP_FROM}
       - CLIENT_URL=${CLIENT_URL}
     volumes:
-      - ./server/database.sqlite:/app/database.sqlite
-      - ./server/excel-logs:/app/excel-logs
-      - ./server/temp:/app/temp
+      - msc-excel-logs:/app/excel-logs
+      - msc-temp:/app/temp
     networks:
       - msc-network
     healthcheck:
@@ -55,3 +54,7 @@ services:
 networks:
   msc-network:
     driver: bridge
+
+volumes:
+  msc-excel-logs:
+  msc-temp:
