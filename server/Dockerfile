@@ -5,11 +5,33 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
+# Install system dependencies for health checks and Puppeteer
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    gnupg \
+    ca-certificates \
+    fonts-liberation \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libcups2 \
+    libdbus-1-3 \
+    libdrm2 \
+    libgbm1 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxkbcommon0 \
+    libxrandr2 \
+    xdg-utils \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install dependencies (using npm install instead of npm ci for more flexibility)
 RUN npm install --production
-
-# Install curl for health checks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # Copy application files
 COPY . .

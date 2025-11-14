@@ -77,7 +77,8 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5002;
+const HOST = '0.0.0.0'; // Bind to all interfaces for Docker
 
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`Server is running on ${HOST}:${PORT}`);
 }); 
