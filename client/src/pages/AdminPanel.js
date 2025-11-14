@@ -85,7 +85,7 @@ const AdminPanel = () => {
 
       try {
         // Verify token with server
-        const response = await axios.get('http://localhost:5002/api/auth/verify', {
+        const response = await axios.get('/api/auth/verify', {
           headers: {
             'Authorization': `Bearer ${storedToken}`
           }
@@ -94,7 +94,7 @@ const AdminPanel = () => {
         if (response.data.valid) {
           setToken(storedToken);
           setLoginOpen(false);
-          const socket = io('http://localhost:5002');
+          const socket = io();
           await fetchDonations();
           
           socket.on('donationUpdate', () => {
@@ -125,7 +125,7 @@ const AdminPanel = () => {
   const fetchDonations = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5002/api/donations', {
+      const response = await axios.get('/api/donations', {
         headers: {
           'Authorization': `Bearer ${token}`
         },
@@ -147,7 +147,7 @@ const AdminPanel = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5002/api/auth/login', credentials);
+      const response = await axios.post('/api/auth/login', credentials);
       const { token: newToken } = response.data;
       
       localStorage.setItem('adminToken', newToken);
@@ -173,7 +173,7 @@ const AdminPanel = () => {
   const handleExport = async () => {
     try {
       console.log('Starting export with token:', token);
-      const response = await axios.get('http://localhost:5002/api/donations/export/excel', {
+      const response = await axios.get('/api/donations/export/excel', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -246,7 +246,7 @@ const AdminPanel = () => {
 
   const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:5002/api/donations/${deletingDonation.id}`, {
+      await axios.delete(`/api/donations/${deletingDonation.id}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

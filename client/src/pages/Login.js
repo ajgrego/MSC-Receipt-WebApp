@@ -29,7 +29,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5002/api/auth/login', credentials);
+      const response = await axios.post('/api/auth/login', credentials);
       const { token } = response.data;
       localStorage.setItem('adminToken', token);
       navigate('/admin');
