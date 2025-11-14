@@ -8,7 +8,7 @@ services:
     container_name: msc-server
     restart: unless-stopped
     ports:
-      - "5002:5002"
+      - "${SERVER_PORT:-5002}:5002"
     environment:
       - NODE_ENV=production
       - PORT=5002
@@ -25,6 +25,12 @@ services:
       - ./server/temp:/app/temp
     networks:
       - msc-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5002/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   client:
     build:
@@ -33,17 +39,19 @@ services:
     container_name: msc-client
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "${CLIENT_PORT:-8080}:80"
     depends_on:
-      - server
+      server:
+        condition: service_healthy
     networks:
       - msc-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
 networks:
   msc-network:
     driver: bridge
-
-volumes:
-  database:
-  excel-logs:
-  temp:

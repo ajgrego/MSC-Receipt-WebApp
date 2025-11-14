@@ -185,11 +185,99 @@ npm start
 
 #### Option 2: Docker Deployment
 
-Docker configuration files are included in the repository:
+Docker configuration files are included in the repository with built-in health checks for reliable deployments.
 
+**Quick Start:**
+
+1. Create environment configuration:
+```bash
+# Copy the example file
+cp .env.example .env
+
+# Edit .env and fill in your values
+nano .env
+```
+
+2. Start the containers:
 ```bash
 docker-compose up -d
 ```
+
+The application will be accessible at:
+- **Client**: http://your-server-ip:8080 (configurable via CLIENT_PORT)
+- **Server API**: http://your-server-ip:5002 (configurable via SERVER_PORT)
+
+#### Option 3: Portainer Deployment
+
+This application is fully configured for Portainer deployment with health checks.
+
+**Prerequisites:**
+- Portainer installed and running on your server
+- Git repository access (GitHub, GitLab, etc.)
+
+**Deployment Steps:**
+
+1. **Access Portainer** (usually at http://your-server-ip:9000)
+
+2. **Navigate to Stacks** > Click "Add stack"
+
+3. **Configure the Stack:**
+   - **Name**: `msc-receipt-webapp`
+   - **Build method**: Select "Repository"
+   - **Repository URL**: Your git repository URL
+   - **Repository reference**: `refs/heads/main` (or your branch name)
+   - **Compose path**: `docker-compose.yml`
+
+4. **Set Environment Variables** (click "Add environment variable" for each):
+   ```
+   CLIENT_PORT=8080
+   SERVER_PORT=5002
+   JWT_SECRET=your-super-secret-jwt-key-here
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=your-email@gmail.com
+   SMTP_PASS=your-app-password
+   SMTP_FROM=your-email@gmail.com
+   CLIENT_URL=http://your-server-ip:8080
+   ```
+
+   **Important Notes:**
+   - Change `CLIENT_PORT` to any available port (e.g., 3000, 8080, 8888)
+   - Set `CLIENT_URL` to match your server's IP and `CLIENT_PORT`
+   - Generate a secure `JWT_SECRET`: `openssl rand -base64 32`
+   - For Gmail, use an [App Password](https://myaccount.google.com/apppasswords)
+
+5. **Deploy** - Click "Deploy the stack"
+
+6. **Monitor Health Status:**
+   - Go to "Containers" in Portainer
+   - Both `msc-server` and `msc-client` should show as "healthy"
+   - If unhealthy, check container logs for errors
+
+7. **Access Your Application:**
+   - Open browser to `http://your-server-ip:[CLIENT_PORT]`
+   - Default: http://your-server-ip:8080
+
+**Health Checks:**
+
+The application includes automatic health monitoring:
+- **Server**: Checks `/health` endpoint every 30 seconds
+- **Client**: Checks nginx `/health` endpoint every 30 seconds
+- Portainer will automatically restart unhealthy containers
+
+**Troubleshooting Portainer Deployment:**
+
+- **Health check failing**: Check environment variables are set correctly
+- **Client shows "Can't connect to server"**: Verify `CLIENT_URL` matches your actual server address
+- **Email not working**: Verify SMTP credentials and check server logs
+- **Port already in use**: Change `CLIENT_PORT` or `SERVER_PORT` in environment variables
+
+**Updating the Deployment:**
+
+1. Push changes to your git repository
+2. In Portainer, go to your stack
+3. Click "Pull and redeploy"
+4. Wait for health checks to pass
 
 ### Reverse Proxy Configuration
 

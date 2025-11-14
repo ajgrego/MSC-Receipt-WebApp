@@ -47,6 +47,16 @@ app.set('emitDonationUpdate', emitDonationUpdate);
 const donationRoutes = require('./routes/donations');
 const { router: authRoutes } = require('./routes/auth');
 
+// Health check endpoint (must be before other routes)
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    service: 'msc-receipt-server'
+  });
+});
+
 // Routes
 app.use('/api/donations', donationRoutes);
 app.use('/api/auth', authRoutes);
