@@ -23,6 +23,9 @@ import {
   MenuItem,
   IconButton,
   DialogContentText,
+  FormControl,
+  InputLabel,
+  Select,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -72,6 +75,7 @@ const AdminPanel = () => {
   });
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deletingDonation, setDeletingDonation] = useState(null);
+  const [exportPeriod, setExportPeriod] = useState('all');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -170,10 +174,82 @@ const AdminPanel = () => {
     }
   };
 
+  const calculateDateRange = (period) => {
+    const now = new Date();
+    let startDate = null;
+    let endDate = null;
+
+    switch (period) {
+      case 'month':
+        // First day of current month to last day of current month
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        break;
+      case 'year':
+        // January 1 to December 31 of current year
+        startDate = new Date(now.getFullYear(), 0, 1);
+        endDate = new Date(now.getFullYear(), 11, 31);
+        break;
+      case 'quarter':
+        // Determine current quarter
+        const currentMonth = now.getMonth();
+        let quarterStartMonth;
+        let quarterEndMonth;
+
+        if (currentMonth >= 0 && currentMonth <= 2) {
+          // Q1: Jan-Mar
+          quarterStartMonth = 0;
+          quarterEndMonth = 2;
+        } else if (currentMonth >= 3 && currentMonth <= 5) {
+          // Q2: Apr-Jun
+          quarterStartMonth = 3;
+          quarterEndMonth = 5;
+        } else if (currentMonth >= 6 && currentMonth <= 8) {
+          // Q3: Jul-Sep
+          quarterStartMonth = 6;
+          quarterEndMonth = 8;
+        } else {
+          // Q4: Oct-Dec
+          quarterStartMonth = 9;
+          quarterEndMonth = 11;
+        }
+
+        startDate = new Date(now.getFullYear(), quarterStartMonth, 1);
+        endDate = new Date(now.getFullYear(), quarterEndMonth + 1, 0);
+        break;
+      case 'all':
+      default:
+        // No date filter
+        startDate = null;
+        endDate = null;
+        break;
+    }
+
+    return { startDate, endDate };
+  };
+
   const handleExport = async () => {
     try {
       console.log('Starting export with token:', token);
-      const response = await axios.get('/api/donations/export/excel', {
+
+      // Calculate date range based on selected period
+      const { startDate, endDate } = calculateDateRange(exportPeriod);
+
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (startDate) {
+        params.append('startDate', startDate.toISOString().split('T')[0]);
+      }
+      if (endDate) {
+        params.append('endDate', endDate.toISOString().split('T')[0]);
+      }
+
+      const queryString = params.toString();
+      const url = `/api/donations/export/excel${queryString ? `?${queryString}` : ''}`;
+
+      console.log('Export URL:', url);
+
+      const response = await axios.get(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -182,23 +258,23 @@ const AdminPanel = () => {
       });
 
       console.log('Response received:', response.status);
-      
+
       if (!response.data) {
         throw new Error('No data received from server');
       }
 
-      const blob = new Blob([response.data], { 
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       });
-      const url = window.URL.createObjectURL(blob);
+      const blobUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = url;
+      link.href = blobUrl;
       link.setAttribute('download', 'MSC-Donations.xlsx');
       document.body.appendChild(link);
       link.click();
       link.remove();
-      window.URL.revokeObjectURL(url);
-      
+      window.URL.revokeObjectURL(blobUrl);
+
       setSnackbar({
         open: true,
         message: 'Donations exported successfully!',
@@ -207,7 +283,7 @@ const AdminPanel = () => {
     } catch (error) {
       console.error('Export error:', error);
       console.error('Error response:', error.response);
-      
+
       let errorMessage = 'Failed to export donations. ';
       if (error.response) {
         if (error.response.status === 401) {
@@ -226,7 +302,7 @@ const AdminPanel = () => {
       } else {
         errorMessage += error.message;
       }
-      
+
       setSnackbar({
         open: true,
         message: errorMessage,
@@ -332,18 +408,35 @@ const AdminPanel = () => {
               </Grid>
             </Paper>
 
-            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
               <Typography variant="h6">
                 {filteredDonations.length} donation{filteredDonations.length !== 1 ? 's' : ''} found
               </Typography>
-              <Button
-                variant="contained"
-                startIcon={<DownloadIcon />}
-                onClick={handleExport}
-                disabled={filteredDonations.length === 0}
-              >
-                Export to Excel
-              </Button>
+              <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                <FormControl sx={{ minWidth: 200 }}>
+                  <InputLabel id="export-period-label">Export Period</InputLabel>
+                  <Select
+                    labelId="export-period-label"
+                    id="export-period"
+                    value={exportPeriod}
+                    label="Export Period"
+                    onChange={(e) => setExportPeriod(e.target.value)}
+                  >
+                    <MenuItem value="all">All Time</MenuItem>
+                    <MenuItem value="month">This Month</MenuItem>
+                    <MenuItem value="quarter">This Quarter</MenuItem>
+                    <MenuItem value="year">This Year</MenuItem>
+                  </Select>
+                </FormControl>
+                <Button
+                  variant="contained"
+                  startIcon={<DownloadIcon />}
+                  onClick={handleExport}
+                  disabled={filteredDonations.length === 0}
+                >
+                  Export to Excel
+                </Button>
+              </Box>
             </Box>
 
             {filteredDonations.length === 0 ? (

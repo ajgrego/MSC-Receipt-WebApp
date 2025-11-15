@@ -365,8 +365,38 @@ router.post('/', async (req, res) => {
 router.get('/export/excel', verifyToken, async (req, res) => {
   try {
     console.log('Export request received with token');
+
+    // Get date range query parameters
+    const { startDate, endDate } = req.query;
+
+    // Build SQL query with optional date filtering
+    let query = 'SELECT * FROM donations';
+    const params = [];
+
+    if (startDate || endDate) {
+      query += ' WHERE';
+      const conditions = [];
+
+      if (startDate) {
+        conditions.push(' date >= ?');
+        params.push(startDate);
+      }
+
+      if (endDate) {
+        conditions.push(' date <= ?');
+        params.push(endDate);
+      }
+
+      query += conditions.join(' AND');
+    }
+
+    query += ' ORDER BY date DESC';
+
+    console.log('SQL Query:', query);
+    console.log('Parameters:', params);
+
     const rows = await new Promise((resolve, reject) => {
-      db.all('SELECT * FROM donations ORDER BY date DESC', (err, rows) => {
+      db.all(query, params, (err, rows) => {
         if (err) reject(err);
         else resolve(rows);
       });
