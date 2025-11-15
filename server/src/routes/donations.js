@@ -8,6 +8,11 @@ const puppeteer = require('puppeteer');
 const path = require('path');
 const fs = require('fs').promises;
 const excelLogger = require('../utils/excelLogger');
+const DonationImporter = require('../utils/importDonations');
+const multer = require('multer');
+
+// Configure multer for file uploads
+const upload = multer({ dest: 'temp/uploads/' });
 
 // Format phone number to (XXX) XXX-XXXX
 const formatPhoneNumber = (phoneNumberString) => {
@@ -201,7 +206,7 @@ services, they are able to improve their economic standing and provide brighter 
         <div class="value">${new Date(donation.date).toLocaleDateString()}</div>
 
         <div class="label">Name:</div>
-        <div class="value">${donation.donor_name}</div>
+        <div class="value">${donation.donor_first_name} ${donation.donor_last_name}</div>
 
         ${(donation.street_address || donation.city || donation.state || donation.zip_code) ? `
           <div class="label">Address:</div>
@@ -274,7 +279,8 @@ router.post('/', async (req, res) => {
   const {
     type,
     date,
-    donor_name,
+    donor_first_name,
+    donor_last_name,
     street_address,
     city,
     state,
@@ -287,7 +293,7 @@ router.post('/', async (req, res) => {
   } = req.body;
 
   // Validate required fields
-  if (!type || !date || !donor_name) {
+  if (!type || !date || !donor_first_name || !donor_last_name) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
@@ -301,13 +307,14 @@ router.post('/', async (req, res) => {
     const result = await new Promise((resolve, reject) => {
       db.run(
         `INSERT INTO donations (
-          type, date, donor_name, street_address, city, state, zip_code, donor_phone,
+          type, date, donor_first_name, donor_last_name, street_address, city, state, zip_code, donor_phone,
           donor_email, amount, items, total_value
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           type,
           date,
-          donor_name,
+          donor_first_name,
+          donor_last_name,
           street_address || null,
           city || null,
           state || null,
@@ -406,12 +413,13 @@ router.get('/export/excel', verifyToken, async (req, res) => {
         id: `MSC-${row.id.toString().padStart(4, '0')}`,
         date: formattedDate,
         type: row.type === 'cash' ? 'Cash' : 'In-Kind',
-        donor_name: row.donor_name,
+        first_name: row.donor_first_name,
+        last_name: row.donor_last_name,
         donor_email: row.donor_email || '',
         donor_phone: formatPhoneNumber(row.donor_phone) || '',
         donor_address: fullAddress,
         items: itemDescriptions,
-        value: row.type === 'cash' 
+        value: row.type === 'cash'
           ? (row.amount ? `$${parseFloat(row.amount).toFixed(2)}` : '')
           : (totalValue ? `$${totalValue.toFixed(2)}` : '')
       };
@@ -430,7 +438,8 @@ router.get('/export/excel', verifyToken, async (req, res) => {
         'id',
         'date',
         'type',
-        'donor_name',
+        'first_name',
+        'last_name',
         'donor_email',
         'donor_phone',
         'donor_address',
@@ -443,12 +452,13 @@ router.get('/export/excel', verifyToken, async (req, res) => {
     ws['A1'].v = 'Receipt ID';
     ws['B1'].v = 'Date';
     ws['C1'].v = 'Type';
-    ws['D1'].v = 'Donor Name';
-    ws['E1'].v = 'Email';
-    ws['F1'].v = 'Phone';
-    ws['G1'].v = 'Address';
-    ws['H1'].v = 'Items';
-    ws['I1'].v = 'Value';
+    ws['D1'].v = 'First Name';
+    ws['E1'].v = 'Last Name';
+    ws['F1'].v = 'Email';
+    ws['G1'].v = 'Phone';
+    ws['H1'].v = 'Address';
+    ws['I1'].v = 'Items';
+    ws['J1'].v = 'Value';
 
     // Style the header row
     const headerStyle = {
@@ -458,7 +468,7 @@ router.get('/export/excel', verifyToken, async (req, res) => {
     };
 
     // Apply styles to header cells
-    ['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1', 'I1'].forEach(cellRef => {
+    ['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1', 'I1', 'J1'].forEach(cellRef => {
       ws[cellRef].s = headerStyle;
     });
 
@@ -467,7 +477,8 @@ router.get('/export/excel', verifyToken, async (req, res) => {
       { wch: 12 },  // Receipt ID
       { wch: 12 },  // Date
       { wch: 8 },   // Type
-      { wch: 25 },  // Donor Name
+      { wch: 20 },  // First Name
+      { wch: 20 },  // Last Name
       { wch: 25 },  // Email
       { wch: 15 },  // Phone
       { wch: 35 },  // Address
@@ -618,12 +629,12 @@ router.post('/:id/email', async (req, res) => {
             <h1 style="color: #F052A1;">My Sister's Closet</h1>
             <h2 style="color: #333;">Donation Receipt</h2>
           </div>
-          <p>Dear ${donation.donor_name},</p>
+          <p>Dear ${donation.donor_first_name} ${donation.donor_last_name},</p>
           <p>Thank you for your generous ${donation.type} donation to My Sister's Closet.</p>
           <p><strong>Date:</strong> ${new Date(donation.date).toLocaleDateString()}</p>
           <p><strong>Donation Type:</strong> ${donation.type === 'cash' ? 'Cash' : 'In-Kind'}</p>
-          ${donation.type === 'cash' 
-            ? `<p><strong>Amount:</strong> $${parseFloat(donation.amount).toFixed(2)}</p>` 
+          ${donation.type === 'cash'
+            ? `<p><strong>Amount:</strong> $${parseFloat(donation.amount).toFixed(2)}</p>`
             : `<p><strong>Items:</strong></p>${itemsHtml}<p><strong>Total Value:</strong> $${parseFloat(donation.total_value).toFixed(2)}</p>`
           }
           <p>Your generosity helps us continue our mission to support women in need.</p>
@@ -647,6 +658,46 @@ router.post('/:id/email', async (req, res) => {
   } catch (error) {
     console.error('Error in email endpoint:', error);
     res.status(500).json({ error: 'Failed to send email: ' + error.message });
+  }
+});
+
+// Import donations from Excel file
+router.post('/import', verifyToken, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    console.log('Importing donations from file:', req.file.originalname);
+
+    const importer = new DonationImporter();
+    const result = await importer.importFromExcel(req.file.path);
+
+    // Clean up uploaded file
+    await fs.unlink(req.file.path);
+
+    // Emit update to connected clients
+    const emitUpdate = req.app.get('emitDonationUpdate');
+    if (emitUpdate) {
+      emitUpdate();
+    }
+
+    res.json({
+      message: 'Import successful',
+      imported: result.imported,
+      errors: result.errors
+    });
+  } catch (error) {
+    console.error('Error importing donations:', error);
+    // Clean up file on error
+    if (req.file) {
+      try {
+        await fs.unlink(req.file.path);
+      } catch (e) {
+        // Ignore cleanup errors
+      }
+    }
+    res.status(500).json({ error: 'Import failed: ' + error.message });
   }
 });
 

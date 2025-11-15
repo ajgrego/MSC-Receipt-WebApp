@@ -61,11 +61,14 @@ class ExcelLogger {
       'Receipt ID': `MSC-${donation.id.toString().padStart(4, '0')}`,
       'Date': formattedDate,
       'Type': donation.type === 'cash' ? 'Cash' : 'In-Kind',
-      'Donor Name': donation.donor_name,
+      'First Name': donation.donor_first_name || '',
+      'Last Name': donation.donor_last_name || '',
       'Email': donation.donor_email || '',
       'Phone': this.formatPhoneNumber(donation.donor_phone) || '',
-      'Address': fullAddress,
-      'Items': items,
+      'Street Address': donation.street_address || '',
+      'City': donation.city || '',
+      'State': donation.state || '',
+      'ZIP': donation.zip_code || '',
       'Amount': totalValue ? `$${parseFloat(totalValue).toFixed(2)}` : ''
     };
   }
@@ -111,11 +114,14 @@ class ExcelLogger {
         { wch: 12 },  // Receipt ID
         { wch: 12 },  // Date
         { wch: 8 },   // Type
-        { wch: 25 },  // Donor Name
+        { wch: 15 },  // First Name
+        { wch: 15 },  // Last Name
         { wch: 25 },  // Email
         { wch: 15 },  // Phone
-        { wch: 35 },  // Address
-        { wch: 50 },  // Items
+        { wch: 25 },  // Street Address
+        { wch: 15 },  // City
+        { wch: 5 },   // State
+        { wch: 10 },  // ZIP
         { wch: 12 }   // Amount
       ];
       newWs['!cols'] = colWidths;
