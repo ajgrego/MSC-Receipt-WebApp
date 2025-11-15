@@ -14,12 +14,26 @@ import {
   Alert,
   Snackbar,
   CircularProgress,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  FormHelperText,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import html2pdf from 'html2pdf.js';
 import axios from 'axios';
+
+// US States
+const US_STATES = [
+  'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+  'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+  'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+  'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+  'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+];
 
 // Format phone number to (XXX) XXX-XXXX
 const formatPhoneNumber = (phoneNumberString) => {
@@ -43,7 +57,8 @@ const CashDonation = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     date: new Date(),
-    donor_name: '',
+    donor_first_name: '',
+    donor_last_name: '',
     street_address: '',
     city: '',
     state: '',
@@ -66,12 +81,42 @@ const CashDonation = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     // Required fields
-    if (!formData.donor_name.trim()) {
-      newErrors.donor_name = 'Donor name is required';
+    if (!formData.donor_first_name.trim()) {
+      newErrors.donor_first_name = 'First name is required';
     }
-    
+
+    if (!formData.donor_last_name.trim()) {
+      newErrors.donor_last_name = 'Last name is required';
+    }
+
+    if (!formData.street_address.trim()) {
+      newErrors.street_address = 'Street address is required';
+    }
+
+    if (!formData.city.trim()) {
+      newErrors.city = 'City is required';
+    }
+
+    if (!formData.state) {
+      newErrors.state = 'State is required';
+    }
+
+    if (!formData.zip_code.trim()) {
+      newErrors.zip_code = 'ZIP code is required';
+    }
+
+    if (!formData.donor_phone.trim()) {
+      newErrors.donor_phone = 'Phone number is required';
+    }
+
+    if (!formData.donor_email.trim()) {
+      newErrors.donor_email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.donor_email)) {
+      newErrors.donor_email = 'Please enter a valid email';
+    }
+
     if (!formData.amount) {
       newErrors.amount = 'Amount is required';
     } else {
@@ -268,7 +313,8 @@ const CashDonation = () => {
   const resetForm = () => {
     setFormData({
       date: new Date(),
-      donor_name: '',
+      donor_first_name: '',
+      donor_last_name: '',
       street_address: '',
       city: '',
       state: '',
@@ -322,15 +368,28 @@ const CashDonation = () => {
                 />
               </Grid>
               
-              <Grid item xs={12}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Donor Name"
-                  name="donor_name"
-                  value={formData.donor_name}
+                  label="First Name"
+                  name="donor_first_name"
+                  value={formData.donor_first_name}
                   onChange={handleChange}
-                  error={!!errors.donor_name}
-                  helperText={errors.donor_name}
+                  error={!!errors.donor_first_name}
+                  helperText={errors.donor_first_name}
+                  required
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Last Name"
+                  name="donor_last_name"
+                  value={formData.donor_last_name}
+                  onChange={handleChange}
+                  error={!!errors.donor_last_name}
+                  helperText={errors.donor_last_name}
                   required
                 />
               </Grid>
@@ -342,6 +401,9 @@ const CashDonation = () => {
                   name="street_address"
                   value={formData.street_address}
                   onChange={handleChange}
+                  error={!!errors.street_address}
+                  helperText={errors.street_address}
+                  required
                 />
               </Grid>
 
@@ -352,18 +414,32 @@ const CashDonation = () => {
                   name="city"
                   value={formData.city}
                   onChange={handleChange}
+                  error={!!errors.city}
+                  helperText={errors.city}
+                  required
                 />
               </Grid>
 
               <Grid item xs={6} sm={3}>
-                <TextField
-                  fullWidth
-                  label="State"
-                  name="state"
-                  value={formData.state}
-                  onChange={handleChange}
-                  inputProps={{ maxLength: 2 }}
-                />
+                <FormControl fullWidth required error={!!errors.state}>
+                  <InputLabel>State</InputLabel>
+                  <Select
+                    name="state"
+                    value={formData.state}
+                    onChange={handleChange}
+                    label="State"
+                  >
+                    <MenuItem value="">
+                      <em>Select State</em>
+                    </MenuItem>
+                    {US_STATES.map((state) => (
+                      <MenuItem key={state} value={state}>
+                        {state}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {errors.state && <FormHelperText>{errors.state}</FormHelperText>}
+                </FormControl>
               </Grid>
 
               <Grid item xs={6} sm={4}>
@@ -373,10 +449,13 @@ const CashDonation = () => {
                   name="zip_code"
                   value={formData.zip_code}
                   onChange={handleChange}
+                  error={!!errors.zip_code}
+                  helperText={errors.zip_code}
                   inputProps={{ maxLength: 10 }}
+                  required
                 />
               </Grid>
-              
+
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
@@ -386,9 +465,10 @@ const CashDonation = () => {
                   onChange={handleChange}
                   error={!!errors.donor_phone}
                   helperText={errors.donor_phone}
+                  required
                 />
               </Grid>
-              
+
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
@@ -399,6 +479,7 @@ const CashDonation = () => {
                   onChange={handleChange}
                   error={!!errors.donor_email}
                   helperText={errors.donor_email}
+                  required
                 />
               </Grid>
               
@@ -477,7 +558,7 @@ const CashDonation = () => {
                 </Grid>
                 <Grid item xs={8} sm={9}>
                   <Typography variant="subtitle1">
-                    {formData.donor_name}
+                    {formData.donor_first_name} {formData.donor_last_name}
                   </Typography>
                 </Grid>
                 
@@ -546,7 +627,7 @@ const CashDonation = () => {
               </Grid>
               
               <Typography variant="body1" paragraph sx={{ mt: 2, textAlign: 'justify', lineHeight: 1.4, fontSize: '0.95rem' }}>
-                Dear {formData.donor_name},
+                Dear {formData.donor_first_name} {formData.donor_last_name},
               </Typography>
               <Typography variant="body1" paragraph sx={{ textAlign: 'justify', lineHeight: 1.4, fontSize: '0.95rem' }}>
                 On behalf of the women we serve, thank you for your generous gift. MSC uses unique 
