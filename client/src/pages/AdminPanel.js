@@ -30,7 +30,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { Download as DownloadIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Download as DownloadIcon, Delete as DeleteIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material';
 import axios from 'axios';
 import io from 'socket.io-client';
 
@@ -76,6 +76,8 @@ const AdminPanel = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deletingDonation, setDeletingDonation] = useState(null);
   const [exportPeriod, setExportPeriod] = useState('all');
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = React.useRef(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -311,6 +313,89 @@ const AdminPanel = () => {
     }
   };
 
+  const handleImportClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.name.endsWith('.xlsx')) {
+      setSnackbar({
+        open: true,
+        message: 'Please select a valid .xlsx file',
+        severity: 'error',
+      });
+      return;
+    }
+
+    setImporting(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await axios.post('/api/donations/import', formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const { imported, errors } = response.data;
+
+      let message = `Successfully imported ${imported} donation${imported !== 1 ? 's' : ''}`;
+      if (errors > 0) {
+        message += `, ${errors} error${errors !== 1 ? 's' : ''}`;
+      }
+
+      setSnackbar({
+        open: true,
+        message: message,
+        severity: errors > 0 ? 'warning' : 'success',
+      });
+
+      // Refresh the donations list
+      await fetchDonations();
+    } catch (error) {
+      console.error('Import error:', error);
+
+      let errorMessage = 'Failed to import donations. ';
+      if (error.response) {
+        if (error.response.status === 401) {
+          errorMessage = 'Session expired. Please log in again.';
+          localStorage.removeItem('adminToken');
+          setToken(null);
+          setLoginOpen(true);
+        } else if (error.response.data?.error) {
+          errorMessage += error.response.data.error;
+        } else {
+          errorMessage += 'Please check the file format and try again.';
+        }
+      } else if (error.request) {
+        errorMessage += 'Server not responding. Please try again.';
+      } else {
+        errorMessage += error.message;
+      }
+
+      setSnackbar({
+        open: true,
+        message: errorMessage,
+        severity: 'error',
+      });
+    } finally {
+      setImporting(false);
+      // Reset the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
@@ -428,6 +513,22 @@ const AdminPanel = () => {
                     <MenuItem value="year">This Year</MenuItem>
                   </Select>
                 </FormControl>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx"
+                  style={{ display: 'none' }}
+                  onChange={handleFileChange}
+                />
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  startIcon={importing ? <CircularProgress size={20} color="inherit" /> : <CloudUploadIcon />}
+                  onClick={handleImportClick}
+                  disabled={importing}
+                >
+                  {importing ? 'Importing...' : 'Import Excel'}
+                </Button>
                 <Button
                   variant="contained"
                   startIcon={<DownloadIcon />}
